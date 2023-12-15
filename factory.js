@@ -1,7 +1,7 @@
 'use strict';
 
 const config = require('leo-config');
-const AWS = require('aws-sdk');
+const { fromIni } = require("@aws-sdk/credential-providers");
 const merge = require('lodash.merge');
 
 const leoaws = {
@@ -12,10 +12,10 @@ const leoaws = {
 	sqs: require('./lib/sqs'),
 };
 
-function factory (service, options) {
+function factory(service, options) {
 	const configuration = config.leoaws;
 	if (configuration && configuration.profile && !configuration.credentials) {
-		configuration.credentials = new AWS.SharedIniFileCredentials({
+		configuration.credentials = fromIni({
 			profile: configuration.profile,
 			role: configuration.role,
 		});
@@ -31,7 +31,7 @@ function factory (service, options) {
 	} else {
 		// return a configured AWS service
 		return {
-			_service: new AWS[service](configuration),
+			_service: new require("@aws-sdk/client-" + service.replace(/[A-Z]/g, (a) => "-" + a.toLowerCase()).replace(/^-/, ""))(configuration),
 		};
 	}
 }
