@@ -3,6 +3,8 @@
 const config = require('leo-config');
 const { fromIni } = require("@aws-sdk/credential-providers");
 const merge = require('lodash.merge');
+const requireFn = typeof __webpack_require__ === "function" ? __non_webpack_require__ : require;
+
 
 const leoaws = {
 	cloudformation: require('./lib/cloudformation'),
@@ -30,8 +32,9 @@ function factory(service, options) {
 		return leoaws[lowerService](configuration);
 	} else {
 		// return a configured AWS service
+		let serviceLib = requireFn("@aws-sdk/client-" + service.replace(/[A-Z]/g, (a) => "-" + a.toLowerCase()).replace(/^-/, ""));
 		return {
-			_service: new require("@aws-sdk/client-" + service.replace(/[A-Z]/g, (a) => "-" + a.toLowerCase()).replace(/^-/, ""))(configuration),
+			_service: new serviceLib[service](configuration),
 		};
 	}
 }

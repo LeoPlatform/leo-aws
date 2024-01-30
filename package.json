@@ -1,6 +1,6 @@
 {
 	"name": "leo-aws",
-	"version": "4.0.0-alphav4",
+	"version": "4.0.0-awsv3",
 	"description": "Helper wrappers around AWS services, specifically to ease backoff retry and streaming of data into and out of AWS services",
 	"main": "index.js",
 	"directories": {
