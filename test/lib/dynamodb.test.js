@@ -35,7 +35,7 @@ const dynamodb = [
 	}
 ];
 
-describe('DynamoDB', async function() {
+describe('DynamoDB', function() {
 	// beforeAll(() => {
 	// 	console.log('Preparing to run tests');
 	// });
@@ -120,7 +120,7 @@ describe('DynamoDB', async function() {
 			},
 			Limit: 1
 		}).then(data => {
-			if (Object.keys(data[0].data).length) {
+			if (Object.keys(data[0].compressedData).length) {
 				assert(true);
 			} else {
 				assert(false);
@@ -163,7 +163,7 @@ describe('DynamoDB', async function() {
 		let keys = [279, 289, 369, 1479, 1529].map(id => {
 			return {
 				partition: 'order-' + (id % 10),
-				id: id
+				id: id.toString()
 			};
 		});
 
@@ -194,7 +194,7 @@ describe('DynamoDB', async function() {
 		for (let i = 1; i <= 10; i++) {
 			stream.put({
 				partition: 'qatest-' + i,
-				id: moment.now(),
+				id: moment.now().toString(),
 				data: JSON.stringify({ "uniqid": uniqid() }),
 				entity: 'qatest'
 			});
@@ -216,9 +216,9 @@ describe('DynamoDB', async function() {
 				PutRequest: {
 					Item: {
 						partition: 'qatest-' + i,
-						id: moment.now(),
+						id: moment.now().toString(),
 						data: JSON.stringify({ "uniqid": uniqid() }),
-						entity: 'batchTableWrite'
+						entity: entityTable
 					}
 				}
 			});
@@ -231,7 +231,7 @@ describe('DynamoDB', async function() {
 		});
 	});
 
-	test('streamToTable', async (done) => {
+	test('streamToTable', (done) => {
 
 		let transform = ls.through((obj, done) => {
 			// console.log('obj', obj);
@@ -241,9 +241,9 @@ describe('DynamoDB', async function() {
 		for (let i = 1; i <= 10; i++) {
 			transform.write({
 				partition: 'streamToTable-' + i,
-				id: moment.now(),
+				id: moment.now().toString(),
 				data: JSON.stringify({ "uniqid": uniqid() }),
-				entity: 'streamToTable'
+				entity: entityTable
 			});
 		}
 
@@ -261,7 +261,7 @@ describe('DynamoDB', async function() {
 			});
 	});
 
-	test('testingDelete`', async (done) => {
+	test('testingDelete', async () => {
 		let settingsStream = leoaws.dynamodb.writeToTableInChunks(settingsTable);
 
 		dynamodb.forEach(item => {
@@ -275,7 +275,7 @@ describe('DynamoDB', async function() {
 				console.log('cleaned up settings table');
 				assert(true);
 			}
-			done();
+			//done();
 		});
 
 		// delete records from EntityTable
@@ -292,7 +292,7 @@ describe('DynamoDB', async function() {
 			} else {
 				assert(true);
 			}
-			done();
+			//done();
 		});
 	});
 });
@@ -302,12 +302,12 @@ async function findAndDelete(i, stream) {
 		// query for all of the test records we inserted, and delete them
 		leoaws.dynamodb.query({
 			TableName: entityTable,
-			KeyConditionExpression: `#partition = :partition`,
+			KeyConditionExpression: `#id = :id`,
 			ExpressionAttributeNames: {
-				"#partition": "partition"
+				"#id": "id"
 			},
 			ExpressionAttributeValues: {
-				":partition": `qatest-${i}`
+				":id": `qatest-${i}`
 			}
 		}).then(data => {
 			data.forEach(item => {
@@ -328,12 +328,12 @@ async function findAndDelete(i, stream) {
 function smartQuery(limit = null, count = null) {
 	let params = {
 		TableName: entityTable,
-		KeyConditionExpression: `#partition = :partition`,
+		KeyConditionExpression: `#id = :id`,
 		ExpressionAttributeNames: {
-			"#partition": "partition"
+			"#id": "id"
 		},
 		ExpressionAttributeValues: {
-			":partition": 'order-9'
+			":id": '12148969'
 		}
 	};
 
